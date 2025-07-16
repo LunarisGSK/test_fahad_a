@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'pets',
     'face_recognition',
     'qr_search',
+    'simple_face_id',
 ]
 
 MIDDLEWARE = [

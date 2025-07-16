@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/pets/', include('pets.urls')),
     path('api/face-recognition/', include('face_recognition.urls')),
     path('api/qr/', include('qr_search.urls')),
+    path('api/simple-face-id/', include('simple_face_id.urls')),
 ]
 
 # Serve media files during development

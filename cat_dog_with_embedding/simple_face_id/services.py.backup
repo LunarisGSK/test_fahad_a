@@ -73,45 +73,6 @@ class SimpleFaceIdService:
             logger.error(f"Error generating QR code: {e}")
             return None
     
-    def generate_embedding_from_face_crop(self, face_crop: np.ndarray) -> Optional[np.ndarray]:
-        """Generate embedding from face crop with improved error handling"""
-        try:
-            if face_crop is None:
-                logger.error("Face crop is None")
-                return None
-                
-            if face_crop.size == 0:
-                logger.error("Face crop is empty")
-                return None
-                
-            # Check if face crop has valid dimensions
-            if len(face_crop.shape) != 3 or face_crop.shape[2] != 3:
-                logger.error(f"Invalid face crop shape: {face_crop.shape}")
-                return None
-                
-            # Check if face crop is too small
-            if face_crop.shape[0] < 10 or face_crop.shape[1] < 10:
-                logger.error(f"Face crop too small: {face_crop.shape}")
-                return None
-            
-            logger.info(f"Generating embedding for face crop with shape: {face_crop.shape}")
-            
-            # Use the existing embedding service
-            embedding = self.embedding_service.generate_embedding(face_crop)
-            
-            if embedding is not None:
-                logger.info(f"Successfully generated embedding with shape: {embedding.shape}")
-                return embedding
-            else:
-                logger.error("Embedding service returned None")
-                return None
-                
-        except Exception as e:
-            logger.error(f"Error generating embedding from face crop: {e}")
-            import traceback
-            traceback.print_exc()
-            return None
-    
     def process_face_registration(self, name: str, input_id: str, image_files: List) -> Dict[str, Any]:
         """
         Process face registration from name, ID, and 20 images
@@ -156,8 +117,6 @@ class SimpleFaceIdService:
             
             for idx, image_file in enumerate(image_files):
                 try:
-                    logger.info(f"Processing image {idx+1}/{len(image_files)}: {image_file.name}")
-                    
                     # Save temporary image
                     temp_path = project_folder / f'temp_{idx}.jpg'
                     with open(temp_path, 'wb') as f:
@@ -166,12 +125,10 @@ class SimpleFaceIdService:
                     
                     # Detect faces using YOLO
                     detections = self.yolo_service.detect_pet_faces(str(temp_path))
-                    logger.info(f"YOLO detections: {len(detections)}")
                     
                     if detections:
                         # Process the best detection (highest confidence)
                         best_detection = detections[0]
-                        logger.info(f"Best detection: confidence={best_detection['confidence']}, bbox={best_detection['bounding_box']}")
                         
                         # Extract face crop
                         face_crop = self.yolo_service.extract_face_crop(
@@ -180,19 +137,14 @@ class SimpleFaceIdService:
                         )
                         
                         if face_crop is not None:
-                            logger.info(f"Face crop extracted: shape={face_crop.shape}")
-                            
                             # Save face crop
                             face_crop_path = project_folder / f'face_{face_count}.jpg'
                             cv2.imwrite(str(face_crop_path), face_crop)
-                            logger.info(f"Face crop saved to: {face_crop_path}")
                             
                             # Generate embedding
-                            embedding = self.generate_embedding_from_face_crop(face_crop)
+                            embedding = self.embedding_service.generate_embedding(face_crop)
                             
                             if embedding is not None:
-                                logger.info(f"Embedding generated successfully: shape={embedding.shape}")
-                                
                                 # Save face vector
                                 face_vector = FaceVector.objects.create(
                                     project=project,
@@ -201,19 +153,10 @@ class SimpleFaceIdService:
                                     confidence_score=best_detection['confidence'],
                                     bounding_box=best_detection['bounding_box']
                                 )
-                                
-                                # Set embedding vector
                                 face_vector.set_embedding_vector(embedding)
                                 face_vector.save()
                                 
-                                logger.info(f"Face vector saved successfully for face {face_count}")
                                 face_count += 1
-                            else:
-                                logger.error(f"Failed to generate embedding for image {idx}")
-                        else:
-                            logger.error(f"Failed to extract face crop for image {idx}")
-                    else:
-                        logger.warning(f"No faces detected in image {idx}")
                     
                     processed_count += 1
                     
@@ -223,8 +166,6 @@ class SimpleFaceIdService:
                         
                 except Exception as e:
                     logger.error(f"Error processing image {idx}: {e}")
-                    import traceback
-                    traceback.print_exc()
                     continue
             
             # Generate QR code
@@ -238,8 +179,6 @@ class SimpleFaceIdService:
             
             processing_time = time.time() - start_time
             
-            logger.info(f"Processing completed: {face_count} faces from {len(image_files)} images in {processing_time:.2f}s")
-            
             return {
                 'project_id': project_id,
                 'qr_code': qr_code,
@@ -252,8 +191,6 @@ class SimpleFaceIdService:
             
         except Exception as e:
             logger.error(f"Error in face registration: {e}")
-            import traceback
-            traceback.print_exc()
             return {
                 'error': str(e),
                 'project_id': project_id if 'project_id' in locals() else None
@@ -301,7 +238,7 @@ class SimpleFaceIdService:
                 }
             
             # Generate embedding for search image
-            search_embedding = self.generate_embedding_from_face_crop(face_crop)
+            search_embedding = self.embedding_service.generate_embedding(face_crop)
             
             if search_embedding is None:
                 return {
@@ -382,4 +319,4 @@ class SimpleFaceIdService:
             
         except Exception as e:
             logger.error(f"Error finding similar vector: {e}")
-            return None
+            return None 

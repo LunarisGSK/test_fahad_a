@@ -193,8 +193,8 @@ class SimpleFaceIdService:
                             if embedding is not None:
                                 logger.info(f"Embedding generated successfully: shape={embedding.shape}")
                                 
-                                # Save face vector
-                                face_vector = FaceVector.objects.create(
+                                # Create face vector with embedding data
+                                face_vector = FaceVector(
                                     project=project,
                                     original_image_name=image_file.name,
                                     face_crop_path=str(face_crop_path.relative_to(settings.MEDIA_ROOT)),
@@ -202,8 +202,10 @@ class SimpleFaceIdService:
                                     bounding_box=best_detection['bounding_box']
                                 )
                                 
-                                # Set embedding vector
+                                # Set embedding vector BEFORE saving
                                 face_vector.set_embedding_vector(embedding)
+                                
+                                # Now save the object with complete data
                                 face_vector.save()
                                 
                                 logger.info(f"Face vector saved successfully for face {face_count}")

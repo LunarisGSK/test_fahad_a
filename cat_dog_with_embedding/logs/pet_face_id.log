@@ -1,0 +1,15 @@
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"POST /api/simple-face-id/register/ HTTP/1.1" 201 752
+Bad Request: /api/simple-face-id/register/
+"POST /api/simple-face-id/register/ HTTP/1.1" 400 77
+Watching for file changes with StatReloader
+Bad Request: /api/simple-face-id/register/
+"POST /api/simple-face-id/register/ HTTP/1.1" 400 77
+Watching for file changes with StatReloader
+Bad Request: /api/simple-face-id/register/
+"POST /api/simple-face-id/register/ HTTP/1.1" 400 77
+"POST /api/simple-face-id/register/ HTTP/1.1" 201 753
+"POST /api/simple-face-id/search/ HTTP/1.1" 200 180

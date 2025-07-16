@@ -17,15 +17,29 @@ from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables from .env file
+def load_env_file():
+    env_path = BASE_DIR / '.env'
+    if env_path.exists():
+        with open(env_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    os.environ.setdefault(key, value)
+
+load_env_file()
+
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!6^(l9ek#s4ngn_hn3gn(#586n!ho17^n_mnvsw-wj9&2ce&mj'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-!6^(l9ek#s4ngn_hn3gn(#586n!ho17^n_mnvsw-wj9&2ce&mj')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = ['*']
 
@@ -208,7 +222,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 
 # AI Model Settings
-YOLO_MODEL_PATH = BASE_DIR / 'ai_models' / 'yolov8l_pet_faces.pt'
+YOLO_MODEL_PATH = os.getenv('YOLO_MODEL_PATH', str('/Users/manzoorhussain/Downloads/last (1).pt'))
 FACE_EMBEDDING_MODEL = 'sentence-transformers/clip-ViT-B-32'
 
 # Face Recognition Settings
